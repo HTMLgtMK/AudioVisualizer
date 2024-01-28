@@ -9,6 +9,8 @@ import android.util.Log
 import androidx.compose.ui.unit.dp
 import kotlin.math.hypot
 import kotlin.math.log10
+import com.gthncz.audiovisuailzer.visualizer.filter.IDataFilter
+import com.gthncz.audiovisuailzer.visualizer.filter.SGFilter
 
 class BarRenderer: IRenderer {
 
@@ -16,10 +18,19 @@ class BarRenderer: IRenderer {
         private const val TAG = "BarRenderer"
     }
 
-    private val mTargetEndPoints = listOf(
-        0f, 63f, 100f, 160f, 200f, 250f, 315f, 400f, 500f, 630f, 800f, 1000f, 1250f, 1600f, 2000f, 2500f,
-        3150f, 4000f, 5000f, 6250f, 8000f, 10000f, 12500f, 16000f, 20000f
-    )
+//    private val mTargetEndPoints = listOf(
+//        0f, 63f, 100f, 160f, 200f,
+//        250f, 315f, 400f, 500f, 630f,
+//        800f, 1000f, 1250f, 1600f, 2000f,
+//        2500f, 3150f, 4000f, 5000f, 6250f,
+//        8000f, 10000f, 12500f, 16000f, 20000f
+//    )
+
+    val mTargetEndPoints = (0 .. 5000 step 100).map { it.toFloat() }.toMutableList().apply {
+        addAll(listOf(
+            5000f, 6250f, 8000f, 10000f, 12500f, 16000f, 20000f
+        ))
+    }
 
     private var mFreqencyOrdinalRanges: List<IntRange> = emptyList()
 
@@ -30,12 +41,16 @@ class BarRenderer: IRenderer {
     // number of bar.
     private var mBarNum: Int = 100
 
+    // spectrum filter.
+    private val mDataFilters = mutableListOf<IDataFilter>()
+
     init {
         mPaint = Paint()
         mPaint.color = Color.MAGENTA
         mPaint.strokeWidth = mBarWidth
         mPaint.maskFilter = BlurMaskFilter(1.dp.value, BlurMaskFilter.Blur.SOLID)
         // mPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.MULTIPLY)
+        mDataFilters.add(SGFilter(7, 3))
     }
 
     override fun initRender(extra: IRenderer.RenderExtra) {
@@ -91,6 +106,12 @@ class BarRenderer: IRenderer {
             }
             output[index] = dbSum / (frequencyOrdinalRange.last - frequencyOrdinalRange.first + 1)
         }
+
+        // filter data.
+        mDataFilters.forEach { filter->
+            filter.process(output)
+        }
+
         return output
     }
 
