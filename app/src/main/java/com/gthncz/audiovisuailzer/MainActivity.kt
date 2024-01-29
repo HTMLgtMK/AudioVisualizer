@@ -110,14 +110,40 @@ class MainActivity : ComponentActivity() {
                         Greeting("Android", modifier = Modifier.wrapContentHeight())
 
                         Spacer(modifier = Modifier.padding(vertical = 10.dp))
-                        
-                        Button(
-                            modifier = Modifier
-                                .wrapContentHeight()
-                                .padding(10.dp),
-                            onClick = { checkAndRequestPermissions {  } }
-                        ) {
-                            Text(text = "CheckPermissions")
+
+                        Row (modifier = Modifier.fillMaxWidth()) {
+                            Button(
+                                modifier = Modifier
+                                    .wrapContentHeight()
+                                    .padding(10.dp),
+                                onClick = { checkAndRequestPermissions {  } }
+                            ) {
+                                Text(text = "CheckPermissions")
+                            }
+
+                            Spacer(modifier = Modifier.padding(10.dp))
+
+                            val globalVisualizerState = remember {
+                                mutableStateOf(false)
+                            }
+
+                            Button(
+                                modifier = Modifier
+                                    .wrapContentHeight()
+                                    .padding(10.dp),
+                                onClick = {
+                                    if (globalVisualizerState.value) {
+                                        VisualizerController.stop()
+                                        VisualizerController.onPlayerReleased()
+                                    } else {
+                                        VisualizerController.onPlayerPrepared(0)
+                                        VisualizerController.start()
+                                    }
+                                    globalVisualizerState.value = !globalVisualizerState.value
+                                }
+                            ) {
+                                Text(text = if (globalVisualizerState.value) "Standby" else "Dance!")
+                            }
                         }
                         
                         Spacer(modifier = Modifier.padding(vertical = 10.dp))
